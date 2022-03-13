@@ -64,9 +64,11 @@ const {vectorText } = jscad.text
 // possible to modify it on the fly.
 //
 var parameters = [
-    { name: 'boxMode', type: 'radio', caption: 'Show:',
-    values: ['base', 'lid', 'both', 'side by side'],
-    captions: ['Base', 'Lid', 'Both', 'Side by Side'], initial: 'side by side' }
+    {
+        name: 'boxMode', type: 'radio', caption: 'Show:',
+        values: ['base', 'lid', 'lid on base', 'side by side'],
+        captions: ['Base', 'Lid', 'Lid on Base', 'Side by Side'], initial: 'side by side'
+    }
 ]
   
 const getParameterDefinitions = () => parameters
@@ -80,7 +82,6 @@ const main = (params) => {
     if (params.boxMode === 'base') {
         obj.printBaseShell = true;
         obj.printLidShell = false;
-        obj.showSideBySide = true;
     } else if (params.boxMode === 'lid') {
         obj.printBaseShell = false;
         obj.printLidShell = true;
@@ -89,11 +90,12 @@ const main = (params) => {
         obj.printBaseShell = true;
         obj.printLidShell = true;
         obj.showSideBySide = true;
-    } else if (params.boxMode === 'both') {
+    } else if (params.boxMode === 'lid on base') {
         obj.printBaseShell = true;
         obj.printLidShell = true;
         obj.showSideBySide = false;
     }
+    //obj.baseShell()
     obj.YAPPgenerate()
     return obj.color_Box()
 }
@@ -839,12 +841,11 @@ class Box {
 
         //--------------------------------------------------------
         function minkowskiOuterBox(L, W, H, rad, plane, wall) {
-            let d = (wall - rad) * 2
-            return roundedCuboid({size:[L + d + rad,  W + d + rad, (H * 2) + (plane * 2) - (rad * 1)], roundRadius: rad})
+            return roundedCuboid({size:[L + wall * 2,  W + wall * 2, (H * 2) + (plane * 2)], roundRadius: rad})
         }
         //--------------------------------------------------------
         function minkowskiInnerBox(L, W, H, iRad, plane, wall) {
-            return roundedCuboid({size:[L - (iRad * 1),  W - (iRad * 1), (H * 2) - (iRad * 1)], roundRadius: iRad})
+            return roundedCuboid({size:[L, W, H * 2], roundRadius: iRad})
         }
         //--------------------------------------------------------
     
@@ -1238,16 +1239,14 @@ class Box {
                     translate([this.shellLength - label[0], label[1], -this.basePlaneThickness/2],
                         rotateZ(degToRad(label[2]),
                             mirrorX(
-                                extrudeLinear({height: this.lidPlaneThickness}, 
-                                    vectorText({input: label[6], align: 'left', height: label[5]}))))))
+                                scadText(label[6], this.lidPlaneThickness, label[5])))))
                                     //font=label[4], size=label[5], direction="ltr", valign="bottom");
             } //  if base/base
             if (plane=="base" && side=="front" && label[3]=="front") {
                 o = union(o,
                     translate([this.shellLength - this.wallThickness / 2, label[0], label[1]],
                         rotate([Math.PI / 2, 0, degToRad(90 + label[2])],
-                            extrudeLinear({height: this.wallThickness}, 
-                                vectorText({input: label[6], align: 'left', height: label[5]})))))
+                            scadText(label[6], this.lidPlaneThickness, label[5]))))
                                 //font=label[4], size=label[5], direction="ltr", valign="bottom");    
             } //  if base/front
             if (plane=="base" && side=="back" && label[3]=="back") {
@@ -1255,61 +1254,53 @@ class Box {
                     translate([-this.wallThickness / 2, this.shellWidth - label[0], label[1]],
                         rotate([Math.PI / 2, 0, degToRad(90 + label[2])],
                             mirrorX(
-                                extrudeLinear({height: this.wallThickness}, 
-                                    vectorText({input: label[6], align: 'left', height: label[5]}))))))
+                                scadText(label[6], this.lidPlaneThickness, label[5])))))
             } //  if base/back
             if (plane=="base" && side=="left" && label[3]=="left") {
                 o = union(o,
                     translate([label[0], this.wallThickness / 2, label[1]], 
                         rotate([Math.PI / 2, degToRad(label[2], 0)],
-                            extrudeLinear({height: this.wallThickness}, 
-                                vectorText({input: label[6], align: 'left', height: label[5]})))))
+                            scadText(label[6], this.lidPlaneThickness, label[5]))))
             } //  if..base/left
             if (plane=="base" && side=="right" && label[3]=="right") {
                 o = union(o,
                     translate([this.shellLength - label[0], this.shellWidth + this.wallThickness / 2, label[1]],
                         rotate([Math.PI / 2, degToRad(label[2], 0)],
                             mirrorX(
-                                extrudeLinear({height: this.wallThickness}, 
-                                    vectorText({input: label[6], align: 'left', height: label[5]}))))))
+                                scadText(label[6], this.lidPlaneThickness, label[5])))))
             } //  if..base/right
             if (plane=="lid" && side=="lid" && label[3]=="lid") {
                 o = union(o,
                     translate([label[0], label[1], -this.lidPlaneThickness/2],
                         rotateZ(degToRad(label[2]),
-                            extrudeLinear({height: this.lidPlaneThickness}, 
-                                vectorText({input: label[6], align: 'left', height: label[5]})))))
+                            scadText(label[6], this.lidPlaneThickness, label[5]))))
             } //  if lid/lid
             if (plane=="lid" && side=="front" && label[3]=="front") {
                 //translate([shellLength+label[0], (shellHeight*-1)-label[1], 10+(lidPlaneThickness*-0.5)]) 
                 o = union(o,
                     translate([this.shellLength - this.wallThickness / 2, label[0], -this.shellHeight + label[1]],
                         rotate([Math.PI / 2, 0, degToRad(90 + label[2])],
-                            extrudeLinear({height: this.wallThickness}, 
-                                vectorText({input: label[6], align: 'left', height: label[5]})))))    
+                            scadText(label[6], this.lidPlaneThickness, label[5]))))
             } //  if lid/front
             if (plane=="lid" && side=="back" && label[3]=="back") {
                 o = union(o,
                     translate([-this.wallThickness / 2, this.shellWidth - label[0], -this.shellHeight + label[1]],
                         rotate([Math.PI / 2, 0, degToRad(90 + label[2])],
                             mirrorX(
-                                extrudeLinear({height: this.wallThickness}, 
-                                    vectorText({input: label[6], align: 'left', height: label[5]}))))))
+                                scadText(label[6], this.lidPlaneThickness, label[5])))))
             } //  if lid/back
             if (plane=="lid" && side=="left" && label[3]=="left") {
                 o = union(o,
                     translate([label[0], this.lidPlaneThickness/2, -this.shellHeight + label[1]],
                         rotate([Math.PI / 2, degToRad(label[2]), 0],
-                            extrudeLinear({height: this.wallThickness}, 
-                                vectorText({input: label[6], align: 'left', height: label[5]})))))
+                            scadText(label[6], this.lidPlaneThickness, label[5]))))
             } //  if..lid/left
             if (plane=="lid" && side=="right" && label[3]=="right") {
                 o = union(o,
                 translate([this.shellLength - label[0], this.shellWidth + wallThickness / 2, -this.shellHeight + label[1]], 
                     rotate([Math.PI / 2, degToRad(label[2]), 0],
                         mirrorX(
-                            extrudeLinear({height: this.wallThickness}, 
-                                vectorText({input: label[6], align: 'left', height: label[5]}))))))
+                            scadText(label[6], this.lidPlaneThickness, label[5])))))
             } //  if..lid/right
         } // for labels...
         return o
@@ -1345,7 +1336,7 @@ class Box {
             union(
                 translate([this.shellLength / 2, this.shellWidth / 2, posZ00],
                     subtract(
-                        this.minkowskiBox("b ase", this.shellInsideLength, this.shellInsideWidth, this.baseWallHeight, this.roundRadius, this.basePlaneThickness, this.wallThickness),
+                        this.minkowskiBox("base", this.shellInsideLength, this.shellInsideWidth, this.baseWallHeight, this.roundRadius, this.basePlaneThickness, this.wallThickness),
                         translate([-1, -1, this.shellHeight/2],
                             this.hideBaseWalls ? 
                             cuboid({size: [this.shellLength + 3, this.shellWidth + 3, this.shellHeight + this.baseWallHeight * 2 - this.basePlaneThickness + this.roundRadius]}) :
@@ -1355,7 +1346,8 @@ class Box {
                                 subtrbaseRidge(this.shellInsideLength + this.wallThickness, this.shellInsideWidth + this.wallThickness, 
                                                this.ridgeHeight, -this.ridgeHeight, this.roundRadius)
                                 ))
-                        )),
+                        )
+                    ),
                 this.pcbHolders(),
                 (this.ridgeHeight < 3) ? console.log("ridgeHeight < 3mm: no SnapJoins possible") : this.printBaseSnapJoins(),
                 this.shellConnectors("base")
@@ -1535,29 +1527,28 @@ class Box {
 
     //===========================================================
     YAPPgenerate() {
-        console.log("YAPP==========================================")
-        console.log("YAPP: wallThickness=", this.wallThickness)
-        console.log("YAPP: roundRadius=", this.roundRadius)
-        console.log("YAPP: shellLength=", this.shellLength)
-        console.log("YAPP: shellInsideLength=", this.shellInsideLength)
-        console.log("YAPP: shellWidth=", this.shellWidth)
-        console.log("YAPP: shellInsideWidth=", this.shellInsideWidth)
-        console.log("YAPP: shellHeight=", this.shellHeight)
-        console.log("YAPP: shellInsideHeight=", this.shellInsideHeight)
-        console.log("YAPP==========================================")
-        console.log("YAPP: pcbX=", this.pcbX)
-        console.log("YAPP: pcbY=", this.pcbY)
-        console.log("YAPP: pcbZ=", this.pcbZ)
-        console.log("YAPP: pcbZlid=", this.pcbZlid)
-        console.log("YAPP==========================================")
-        console.log("YAPP: roundRadius=", this.roundRadius)
-        console.log("YAPP: shiftLid=", this.shiftLid)
-        console.log("YAPP: onLidGap=", this.onLidGap)
-        console.log("YAPP==========================================")
-        console.log("YAPP: Version=", Version)
-        console.log("YAPP:   copyright by Willem Aandewiel")
-        console.log("YAPP==========================================")
-  
+        console.log("OpenJACSD YAPP==========================================")
+        console.log("OpenJACSD YAPP: wallThickness=", this.wallThickness)
+        console.log("OpenJACSD YAPP: roundRadius=", this.roundRadius)
+        console.log("OpenJACSD YAPP: shellLength=", this.shellLength)
+        console.log("OpenJACSD YAPP: shellInsideLength=", this.shellInsideLength)
+        console.log("OpenJACSD YAPP: shellWidth=", this.shellWidth)
+        console.log("OpenJACSD YAPP: shellInsideWidth=", this.shellInsideWidth)
+        console.log("OpenJACSD YAPP: shellHeight=", this.shellHeight)
+        console.log("OpenJACSD YAPP: shellInsideHeight=", this.shellInsideHeight)
+        console.log("OpenJACSD YAPP==========================================")
+        console.log("OpenJACSD YAPP: pcbX=", this.pcbX)
+        console.log("OpenJACSD YAPP: pcbY=", this.pcbY)
+        console.log("OpenJACSD YAPP: pcbZ=", this.pcbZ)
+        console.log("OpenJACSD YAPP: pcbZlid=", this.pcbZlid)
+        console.log("OpenJACSD YAPP==========================================")
+        console.log("OpenJACSD YAPP: roundRadius=", this.roundRadius)
+        console.log("OpenJACSD YAPP: shiftLid=", this.shiftLid)
+        console.log("OpenJACSD YAPP: onLidGap=", this.onLidGap)
+        console.log("OpenJACSD YAPP==========================================")
+        console.log("OpenJACSD YAPP:")
+        console.log("OpenJACSD YAPP:   portions copyright by Willem Aandewiel")
+        console.log("OpenJACSD YAPP==========================================")
         // $fn=25;
         var o = emptyObject()
             
@@ -1582,11 +1573,11 @@ class Box {
                     this.cutoutsInXZ("base"),
                     this.cutoutsInYZ("base"),
 
-                    //colorize(colorNameToRgb('blue'), this.subtractLabels("base", "base")),
-                    //colorize(colorNameToRgb('blue'), this.subtractLabels("base", "front")),
-                    //colorize(colorNameToRgb('blue'), this.subtractLabels("base", "back")),
-                    //colorize(colorNameToRgb('blue'), this.subtractLabels("base", "left")),
-                    //colorize(colorNameToRgb('blue'), this.subtractLabels("base", "right")),
+                    colorize(colorNameToRgb('blue'), this.subtractLabels("base", "base")),
+                    colorize(colorNameToRgb('blue'), this.subtractLabels("base", "front")),
+                    colorize(colorNameToRgb('blue'), this.subtractLabels("base", "back")),
+                    colorize(colorNameToRgb('blue'), this.subtractLabels("base", "left")),
+                    colorize(colorNameToRgb('blue'), this.subtractLabels("base", "right")),
 
                     //--- show inspection X-as
                     //(this.inspectX > 0) ?
@@ -1625,11 +1616,11 @@ class Box {
                                         this.cutoutsInXZ("lid"),
                                         this.cutoutsInYZ("lid"),
                                         (this.ridgeHeight < 3) ? console.log("ridgeHeight < 3mm: no SnapJoins possible") : this.printLidSnapJoins(),
-                                        //colorize(colorNameToRgb('red'), this.subtractLabels("lid", "lid")),
-                                        //colorize(colorNameToRgb('red'), this.subtractLabels("lid", "front")),
-                                        //colorize(colorNameToRgb('red'), this.subtractLabels("lid", "back")),
-                                        //colorize(colorNameToRgb('red'), this.subtractLabels("lid", "left")),
-                                        //colorize(colorNameToRgb('red'), this.subtractLabels("lid", "right")),
+                                        colorize(colorNameToRgb('red'), this.subtractLabels("lid", "lid")),
+                                        colorize(colorNameToRgb('red'), this.subtractLabels("lid", "front")),
+                                        colorize(colorNameToRgb('red'), this.subtractLabels("lid", "back")),
+                                        colorize(colorNameToRgb('red'), this.subtractLabels("lid", "left")),
+                                        colorize(colorNameToRgb('red'), this.subtractLabels("lid", "right")),
 
                                         //--- show inspection X-as
                                         //(this.inspectX > 0) ?
@@ -1664,11 +1655,11 @@ class Box {
                                 this.cutoutsInXZ("lid"),
                                 this.cutoutsInYZ("lid"),
                                 (this.ridgeHeight < 3) ? console.log("ridgeHeight < 3mm: no SnapJoins possible") : this.printLidSnapJoins(),
-                                //colorize(colorNameToRgb('red'), this.subtractLabels("lid", "lid")),
-                                //colorize(colorNameToRgb('red'), this.subtractLabels("lid", "front")),
-                                //colorize(colorNameToRgb('red'), this.subtractLabels("lid", "back")),
-                                //colorize(colorNameToRgb('red'), this.subtractLabels("lid", "left")),
-                                //colorize(colorNameToRgb('red'), this.subtractLabels("lid", "right")),
+                                colorize(colorNameToRgb('red'), this.subtractLabels("lid", "lid")),
+                                colorize(colorNameToRgb('red'), this.subtractLabels("lid", "front")),
+                                colorize(colorNameToRgb('red'), this.subtractLabels("lid", "back")),
+                                colorize(colorNameToRgb('red'), this.subtractLabels("lid", "left")),
+                                colorize(colorNameToRgb('red'), this.subtractLabels("lid", "right")),
 
                                 //--- show inspection X-as
                                 (this.inspectX > 0) ?
@@ -1706,7 +1697,6 @@ function getMinRad(p1, wall) {
 }
 
 function isTrue(w, aw, from) {
-    //console.log(w, aw, from)
     return  ( w==aw[from] 
         || w==aw[from+1]  
         || w==aw[from+2]  
@@ -1791,6 +1781,9 @@ function maxPos(p, w, r, mL) {
 //--------------------------------------------------------------------
 
 // Build text by creating the font strokes (2D), then extruding up (3D).
+// This function was taken from:
+// https://github.com/jscad/OpenJSCAD.org/blob/d57e0a4a6d5dc75ebbdbc5597a3df2f5ad12c7ef/packages/examples/core/text/text.js
+
 const buildFlatText = (message, extrusionHeight, characterLineWidth) => {
     if (message === undefined || message.length === 0) return []
   
@@ -1808,10 +1801,10 @@ const buildFlatText = (message, extrusionHeight, characterLineWidth) => {
     return translate([0, 0, 0], message3D)
   }
   
-const scadText = (message) => {
+const scadText = (message, height = 1, size = 1) => {
     //return rotateY(0*Math.PI/2, buildFlatText(message, 1, 1))
-    let t = 0.3
-    return scale([t, t, t], buildFlatText(message, 1, 1))
+    let t = size * 0.04
+    return scale([t, t, 1], buildFlatText(message, height, 3))
 }
 
 const scadCube = (p) => {
