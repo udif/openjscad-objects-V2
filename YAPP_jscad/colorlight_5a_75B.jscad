@@ -23,33 +23,28 @@
 ****************************************************************************
 */
 
-//
-// This design is an OpenJSCAD rewrite of the following code (https://github.com/mrWheel/YAPP_Box)
-//
+// *****************************************************************************************************
+// *                                                                                                   *
+// * This design is an OpenJSCAD rewrite of the following code (https://github.com/mrWheel/YAPP_Box)   *
+// *                                                                                                   *
+// *      /*                                                                                           *
+// *      ***************************************************************************                  *
+// *      **  Yet Another Parameterised Projectbox generator                                           *
+// *      **                                                                                           *
+// *      */                                                                                           *
+// *      let Version="v1.3 (26-02-2022)";                                                             *
+// *      /*                                                                                           *
+// *      **                                                                                           *
+// *      **  Copyright (c) 2021, 2022 Willem Aandewiel                                                *
+// *      **                                                                                           *
+// *      **  TERMS OF USE: MIT License. See base offile.                                              *
+// *      ***************************************************************************                  *
+// *      */                                                                                           *
+// *****************************************************************************************************
 
-        /*
-        ***************************************************************************  
-        **  Yet Another Parameterised Projectbox generator
-        **
-        */
-        let Version="v1.3 (26-02-2022)";
-        /*
-        **
-        **  Copyright (c) 2021, 2022 Willem Aandewiel
-        **
-        **  TERMS OF USE: MIT License. See base offile.
-        ***************************************************************************      
-        */
-
-/**
- * Hull and HullChain 3D example
- * @category Creating Shapes
- * @skillLevel 8
- * @description Demonstrating the basics of Hulls in three dimensions
- * @tags hull, hullchain
- * @authors Simon Clark
- * @licence MIT License
- */
+//
+// OpenJSCAD port and original code Copyright (c) 2022 Udi Finkelstein
+//
 
 const jscad = require('@jscad/modeling')
 const { arc, circle, ellipse, line, polygon, rectangle, roundedRectangle, square, star } = jscad.primitives
@@ -64,8 +59,12 @@ const { toOutlines } = jscad.geometries.geom2
 const { degToRad } = jscad.utils
 const {vectorText } = jscad.text
 
+//
+// The array was moved out of getParamDefinitions() in a hope that it would be somehow
+// possible to modify it on the fly.
+//
 var parameters = [
-    { name: 'doHull', type: 'radio', caption: 'Show:',
+    { name: 'boxMode', type: 'radio', caption: 'Show:',
     values: ['base', 'lid', 'both', 'side by side'],
     captions: ['Base', 'Lid', 'Both', 'Side by Side'], initial: 'side by side' }
 ]
@@ -78,19 +77,19 @@ const main = (params) => {
     YAPP_colorlight_5A_75B(obj)
     obj.update_Box()
 
-    if (params.doHull === 'base') {
+    if (params.boxMode === 'base') {
         obj.printBaseShell = true;
         obj.printLidShell = false;
         obj.showSideBySide = true;
-    } else if (params.doHull === 'lid') {
+    } else if (params.boxMode === 'lid') {
         obj.printBaseShell = false;
         obj.printLidShell = true;
         obj.showSideBySide = true;
-    } else if (params.doHull === 'side by side') {
+    } else if (params.boxMode === 'side by side') {
         obj.printBaseShell = true;
         obj.printLidShell = true;
         obj.showSideBySide = true;
-    } else if (params.doHull === 'both') {
+    } else if (params.boxMode === 'both') {
         obj.printBaseShell = true;
         obj.printLidShell = true;
         obj.showSideBySide = false;
