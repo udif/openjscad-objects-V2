@@ -70,6 +70,8 @@ var parameters = [
         captions: ['Base', 'Lid', 'Lid on Base', 'Side by Side'], initial: 'side by side'
     },
     { name: 'showPCB', type: 'checkbox', checked: false, initial: false, caption: 'Show PCB:' },
+    { name: 'showMarkers', type: 'checkbox', checked: false, initial: true, caption: 'Show Markers:' },
+    { name: 'showOrientation', type: 'checkbox', checked: false, initial: true, caption: 'Show Orientation:' },
 ]
   
 const getParameterDefinitions = () => parameters
@@ -97,6 +99,8 @@ const main = (params) => {
         obj.showSideBySide = false;
     }
     obj.showPCB = params.showPCB
+    obj.showMarkers = params.showMarkers
+    obj.show_orientation = params.showOrientation
     //obj.baseShell()
     obj.YAPPgenerate()
     return obj.color_Box()
@@ -512,6 +516,8 @@ class Box {
         this.showMarkers         = false;    //-> false
         this.inspectX            = 0;        //-> 0=none (>0 from front, <0 from back)
         this.inspectY            = 0;        //-> 0=none (>0 from left, <0 from right)
+        // new udif stuff
+        this.show_orientation    = true;
         //-- D E B U G ---------------------------------------
 
         /*
@@ -1516,16 +1522,18 @@ class Box {
 
     //===========================================================
     showOrientation() {
-        this.blue =
-            union(this.blue, 
-                translate([-10, 10, 0],
-                    rotateZ(Math.PI / 2,
-                        scadText("BACK", 1, 5))),
-                translate([this.shellLength + 15, 10, 0],
-                    rotateZ(Math.PI / 2,
-                        scadText("FRONT", 1, 5))),
-                translate([15, -(15 + this.shiftLid), 0],
-                    scadText("LEFT", 1, 5)))
+        if (this.show_orientation) {
+            this.blue =
+                union(this.blue, 
+                    translate([-10, 10, 0],
+                        rotateZ(Math.PI / 2,
+                            scadText("BACK", 1, 5))),
+                    translate([this.shellLength + 15, 10, 0],
+                        rotateZ(Math.PI / 2,
+                            scadText("FRONT", 1, 5))),
+                    translate([15, -(15 + this.shiftLid), 0],
+                        scadText("LEFT", 1, 5)))
+        }
     } // showOrientation()
 
     //===========================================================
@@ -1643,9 +1651,12 @@ class Box {
                                     ),
                                     //lidHookOutside(),
                         
-                                    translate([this.shellLength - 15, -15, 0],
-                                            mirrorX(
-                                                scadText("LEFT", 1, 5))))))))
+                                    (this.show_orientation) ?
+                                        translate([this.shellLength - 15, -15, 0],
+                                                mirrorX(
+                                                    scadText("LEFT", 1, 5))) :
+                                        emptyObject()
+                                )))))
             } else { // lid on base
                 o = union(o,
                         translate([0, 0, this.baseWallHeight + this.basePlaneThickness + this.lidWallHeight + this.lidPlaneThickness + this.onLidGap],
