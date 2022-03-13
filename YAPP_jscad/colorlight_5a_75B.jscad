@@ -64,11 +64,13 @@ const { toOutlines } = jscad.geometries.geom2
 const { degToRad } = jscad.utils
 const {vectorText } = jscad.text
 
-const getParameterDefinitions = () => [
-  { name: 'doHull', type: 'radio', caption: 'Show:',
-    values: ['base', 'lid', 'both'],
-    captions: ['Base', 'Lid', 'Both'], initial: 'both' }
-]
+var parameters = [
+    { name: 'doHull', type: 'radio', caption: 'Show:',
+      values: ['base', 'lid', 'both'],
+      captions: ['Base', 'Lid', 'Both'], initial: 'both' }
+  ]
+  
+const getParameterDefinitions = () => parameters
 
 const main = (params) => {
 
@@ -82,6 +84,9 @@ const main = (params) => {
     } else if (params.doHull === 'lid') {
         obj.printBaseShell = false;
         obj.printLidShell = true;
+        parameters.push({ name: 'doHull2', type: 'radio', caption: 'Show:',
+        values: ['base', 'lid', 'both'],
+        captions: ['Base', 'Lid', 'Both'], initial: 'both' })
     } else if (params.doHull === 'both') {
         obj.printBaseShell = true;
         obj.printLidShell = true;
@@ -674,53 +679,61 @@ class Box {
             let snapXpos   = highestVal(tmpX, tmpXmax);
 
             if (isTrue(this.yappLeft, snj, 2)) {
-                translate([snapXpos-(snapWidth / 2), this.wallThickness / 2, snapZposLR],
-                    rotateY(Math.PI / 2,
-                            //color("blue") cylinder(d=wallThickness, h=snapWidth);
-                        cylinder({radius: snapDiam / 2, height: snapWidth}))) // 13-02-2022
-                if (isTrue(this.yappSymmetric, snj, 3)) {
-                    translate([this.shellLength - (snapXpos + (snapWidth / 2)), this.wallThickness / 2, snapZposLR],
+                o = union(o, 
+                    translate([snapXpos-(snapWidth / 2), this.wallThickness / 2, snapZposLR],
                         rotateY(Math.PI / 2,
-                            cylinder({radius: snapDiam / 2, height: snapWidth})))
+                                //color("blue") cylinder(d=wallThickness, h=snapWidth);
+                            cylinder({radius: snapDiam / 2, height: snapWidth})))) // 13-02-2022
+                if (isTrue(this.yappSymmetric, snj, 3)) {
+                    o = union(o, 
+                        translate([this.shellLength - (snapXpos + (snapWidth / 2)), this.wallThickness / 2, snapZposLR],
+                            rotateY(Math.PI / 2,
+                                cylinder({radius: snapDiam / 2, height: snapWidth}))))
                 }  // yappCenter
             } // yappLeft
     
             if (isTrue(this.yappRight, snj, 2)) {
-                translate([snapXpos - (snapWidth / 2), this.shellWidth - (this.wallThickness / 2), snapZposLR],
-                    rotateY(Math.PI / 2,
-                        //color("blue") cylinder(d=wallThickness, h=snapWidth);
-                        cylinder({radius: snapDiam / 2, height: snapWidth})))
-                if (isTrue(this.yappSymmetric, snj, 3)) {
-                    translate([this.shellLength - (snapXpos + (snapWidth / 2)), this.shellWidth - (this.wallThickness / 2), snapZposLR],
+                o = union(o, 
+                    translate([snapXpos - (snapWidth / 2), this.shellWidth - (this.wallThickness / 2), snapZposLR],
                         rotateY(Math.PI / 2,
                             //color("blue") cylinder(d=wallThickness, h=snapWidth);
-                            cylinder({radius: snapDiam / 2, height: snapWidth})))
+                            cylinder({radius: snapDiam / 2, height: snapWidth}))))
+                if (isTrue(this.yappSymmetric, snj, 3)) {
+                    o = union(o, 
+                        translate([this.shellLength - (snapXpos + (snapWidth / 2)), this.shellWidth - (this.wallThickness / 2), snapZposLR],
+                            rotateY(Math.PI / 2,
+                                //color("blue") cylinder(d=wallThickness, h=snapWidth);
+                                cylinder({radius: snapDiam / 2, height: snapWidth}))))
                 } // yappCenter
             } // yappRight
     
             if (isTrue(this.yappBack, snj, 2)) {
-                translate([(this.wallThickness / 2), snapYpos - (snapWidth / 2), snapZposBF],
-                    rotateX(-Math.PI / 2,
-                        //color("blue") cylinder(d=wallThickness, h=snapWidth);
-                        cylinder({radius: snapDiam / 2, height: snapWidth}))) // 13-02-2022
-                if (isTrue(this.yappSymmetric, snj, 3)) {
-                    translate([(this.wallThickness / 2), this.shellWidth - (snapYpos + (snapWidth / 2)), snapZposBF],
+                o = union(o, 
+                    translate([(this.wallThickness / 2), snapYpos - (snapWidth / 2), snapZposBF],
                         rotateX(-Math.PI / 2,
                             //color("blue") cylinder(d=wallThickness, h=snapWidth);
-                            cylinder({radius: snapDiam / 2, height: snapWidth}))) // 13-02-2022
+                            cylinder({radius: snapDiam / 2, height: snapWidth})))) // 13-02-2022
+                if (isTrue(this.yappSymmetric, snj, 3)) {
+                    o = union(o, 
+                        translate([(this.wallThickness / 2), this.shellWidth - (snapYpos + (snapWidth / 2)), snapZposBF],
+                            rotateX(-Math.PI / 2,
+                                //color("blue") cylinder(d=wallThickness, h=snapWidth);
+                                cylinder({radius: snapDiam / 2, height: snapWidth})))) // 13-02-2022
                 } // yappCenter
             } // yappBack
     
             if (isTrue(this.yappFront, snj, 2)) {
-                translate([this.shellLength - (this.wallThickness / 2), snapYpos - (snapWidth / 2), snapZposBF],
-                    rotateX(-Math.PI / 2,
-                        //color("blue") cylinder(d=wallThickness, h=snapWidth);
-                        cylinder({radius: snapDiam / 2, height: snapWidth}))) // 13-02-2022
-                if (isTrue(this.yappSymmetric, snj, 3)) {
-                    translate([this.shellLength - (this.wallThickness / 2), this.shellWidth - (snapYpos + (snapWidth / 2)), snapZposBF],
+                o = union(o, 
+                    translate([this.shellLength - (this.wallThickness / 2), snapYpos - (snapWidth / 2), snapZposBF],
                         rotateX(-Math.PI / 2,
                             //color("blue") cylinder(d=wallThickness, h=snapWidth);
-                            cylinder({radius: snapDiam / 2, height: snapWidth}))) // 13-02-2022
+                            cylinder({radius: snapDiam / 2, height: snapWidth})))) // 13-02-2022
+                if (isTrue(this.yappSymmetric, snj, 3)) {
+                    o = union(o, 
+                        translate([this.shellLength - (this.wallThickness / 2), this.shellWidth - (snapYpos + (snapWidth / 2)), snapZposBF],
+                            rotateX(-Math.PI / 2,
+                                //color("blue") cylinder(d=wallThickness, h=snapWidth);
+                                cylinder({radius: snapDiam / 2, height: snapWidth})))) // 13-02-2022
                 } // yappCenter
             } // yappFront
         } // for snj .. 
@@ -734,6 +747,7 @@ class Box {
 // (2..5) = yappLeft / yappRight / yappFront / yappBack (one or more)
 // (n) = { yappSymmetric }
     printLidSnapJoins() {
+        var o = emptyObject()
         for (let i in this.snapJoins) {
             let snj = this.snapJoins[i]
             let snapWidth  = snj[1] + 1;
@@ -754,57 +768,66 @@ class Box {
             let snapZposBF = -(this.lidPlaneThickness + this.lidWallHeight)-(snapHeight/2)-0.5;
 
             if (isTrue(this.yappLeft, snj, 2)) {
-                translate([snapXpos - (snapWidth / 2) - 0.5, -0.5, snapZposLR],
-                //color("red") cube([snapWidth, 5, wallThickness]);
-                    colorize(colorNameToRgb('red'),
-                        scadCube({size: [snapWidth, this.wallThickness + 1, snapDiam]})))  // 13-02-2022
-                if (isTrue(this.yappSymmetric, snj, 3)) {
-                    translate([this.shellLength - (snapXpos + (snapWidth / 2)) + 0.5, -0.5, snapZposLR],
-                        //color("red") cube([snapWidth, 5, wallThickness]);
+                o = union(o, 
+                    translate([snapXpos - (snapWidth / 2) - 0.5, -0.5, snapZposLR],
+                    //color("red") cube([snapWidth, 5, wallThickness]);
                         colorize(colorNameToRgb('red'),
-                            scadCube({size: [snapWidth, this.wallThickness + 1, snapDiam]})))  // 13-02-2022
+                            scadCube({size: [snapWidth, this.wallThickness + 1, snapDiam]}))))  // 13-02-2022
+                if (isTrue(this.yappSymmetric, snj, 3)) {
+                    o = union(o, 
+                        translate([this.shellLength - (snapXpos + (snapWidth / 2)) + 0.5, -0.5, snapZposLR],
+                            //color("red") cube([snapWidth, 5, wallThickness]);
+                            colorize(colorNameToRgb('red'),
+                                scadCube({size: [snapWidth, this.wallThickness + 1, snapDiam]}))))  // 13-02-2022
                 } // yappSymmetric
             } // yappLeft
     
             if (isTrue(this.yappRight, snj, 2)) {
-                translate([snapXpos - (snapWidth / 2) - 0.5, this.shellWidth - (this.wallThickness - 0.5), snapZposLR],
-                    //color("red") cube([snapWidth, 5, wallThickness]);
-                    colorize(colorNameToRgb('red'),
-                        scadCube({size: [snapWidth, this.wallThickness + 1, snapDiam]})))  // 13-02-2022
-                if (isTrue(this.yappSymmetric, snj, 3)) {
-                    translate([this.shellLength - (snapXpos + (snapWidth / 2) - 0.5), this.shellWidth - (this.wallThickness - 0.5), snapZposLR],
+                o = union(o, 
+                    translate([snapXpos - (snapWidth / 2) - 0.5, this.shellWidth - (this.wallThickness - 0.5), snapZposLR],
                         //color("red") cube([snapWidth, 5, wallThickness]);
-                        colorize(colorNameToRgb('green'),
-                            scadCube({size: [snapWidth, this.wallThickness + 1, snapDiam]})))  // 13-02-2022
+                        colorize(colorNameToRgb('red'),
+                            scadCube({size: [snapWidth, this.wallThickness + 1, snapDiam]}))))  // 13-02-2022
+                if (isTrue(this.yappSymmetric, snj, 3)) {
+                    o = union(o, 
+                        translate([this.shellLength - (snapXpos + (snapWidth / 2) - 0.5), this.shellWidth - (this.wallThickness - 0.5), snapZposLR],
+                            //color("red") cube([snapWidth, 5, wallThickness]);
+                            colorize(colorNameToRgb('green'),
+                                scadCube({size: [snapWidth, this.wallThickness + 1, snapDiam]}))))  // 13-02-2022
                 } // yappSymmetric
             } // yappRight
     
             if (isTrue(this.yappBack, snj, 2)) {
                 //translate([(wallThickness/2)+2,
-                translate([-0.5, snapYpos-(snapWidth/2)-0.5, snapZposBF],
-                    //color("red") cube([5, snapWidth, wallThickness]);
-                    colorize(colorNameToRgb('red'),
-                        scadCube({size: [this.wallThickness + 1, snapWidth, snapDiam]})))  // 13-02-2022
-                if (isTrue(this.yappSymmetric, snj, 3)) {
-                    translate([-0.5, this.shellWidth - (snapYpos + (snapWidth / 2)) + 0.5, snapZposBF],
+                o = union(o, 
+                    translate([-0.5, snapYpos-(snapWidth/2)-0.5, snapZposBF],
+                        //color("red") cube([5, snapWidth, wallThickness]);
                         colorize(colorNameToRgb('red'),
-                            scadCube({size: [this.wallThickness + 1, snapWidth, snapDiam]})))  // 13-02-2022
+                            scadCube({size: [this.wallThickness + 1, snapWidth, snapDiam]}))))  // 13-02-2022
+                if (isTrue(this.yappSymmetric, snj, 3)) {
+                    o = union(o, 
+                        translate([-0.5, this.shellWidth - (snapYpos + (snapWidth / 2)) + 0.5, snapZposBF],
+                            colorize(colorNameToRgb('red'),
+                                scadCube({size: [this.wallThickness + 1, snapWidth, snapDiam]}))))  // 13-02-2022
                 } // yappSymmetric
             } // yappBack
     
             if (isTrue(this.yappFront, snj, 2)) {
                 //translate([shellLength-(wallThickness/2)-1,
-                translate([this.shellLength - wallThickness + 0.5, snapYpos - (snapWidth / 2) - 0.5, snapZposBF],
-                    colorize(colorNameToRgb('red'),
-                        scadCube({size: [this.wallThickness + 1, snapWidth, snapDiam]})))  // 13-02-2022
-                if (isTrue(yappSymmetric, snj, 3))
-                {
-                    translate([shellLength-(wallThickness-0.5), shellWidth-(snapYpos+(snapWidth/2))+0.5, snapZposBF],
+                o = union(o, 
+                    translate([this.shellLength - this.wallThickness + 0.5, snapYpos - (snapWidth / 2) - 0.5, snapZposBF],
                         colorize(colorNameToRgb('red'),
-                            scadCube({size: [this.wallThickness + 1, snapWidth, snapDiam]})))  // 13-02-2022
+                            scadCube({size: [this.wallThickness + 1, snapWidth, snapDiam]}))))  // 13-02-2022
+                if (isTrue(this.yappSymmetric, snj, 3))
+                {
+                    o = union(o, 
+                        translate([shellLength-(this.wallThickness-0.5), shellWidth-(snapYpos+(snapWidth/2))+0.5, snapZposBF],
+                            colorize(colorNameToRgb('red'),
+                                scadCube({size: [this.wallThickness + 1, snapWidth, snapDiam]}))))  // 13-02-2022
                 } // yappSymmetric
             } // yappFront
-        } // for snj .. 
+        } // for snj ..
+        return o
     } //  printLidSnapJoins()
 
     //===========================================================
@@ -1598,7 +1621,7 @@ class Box {
                                         this.cutoutsInXY("lid"),
                                         this.cutoutsInXZ("lid"),
                                         this.cutoutsInYZ("lid"),
-                                        //(this.ridgeHeight < 3) ? console.log("ridgeHeight < 3mm: no SnapJoins possible") : this.printLidSnapJoins(),
+                                        (this.ridgeHeight < 3) ? console.log("ridgeHeight < 3mm: no SnapJoins possible") : this.printLidSnapJoins(),
                                         //colorize(colorNameToRgb('red'), this.subtractLabels("lid", "lid")),
                                         //colorize(colorNameToRgb('red'), this.subtractLabels("lid", "front")),
                                         //colorize(colorNameToRgb('red'), this.subtractLabels("lid", "back")),
