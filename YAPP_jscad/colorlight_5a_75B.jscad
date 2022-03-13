@@ -154,7 +154,7 @@ const YAPP_colorlight_5A_75B = (obj) => {
     // https://www.ledcontrollercard.com/media/wysiwyg/ColorLight/5A-75B%20Receiving%20Card.pdf
     //-- pcb dimensions
     obj.pcbLength         = 143.64; // i(5.6496);
-    obj.pcbWidth          = 91.69; // i(3.6);
+    obj.pcbWidth          = i(3.6);
     obj.pcbThickness      = 2.0;
                             
     //-- padding between pcb and inside wall
@@ -224,6 +224,9 @@ const YAPP_colorlight_5A_75B = (obj) => {
                 , [i(0.375+1*1.075), obj.pcbWidth-i(0.26+0.1), i(0.2), i(0.8), obj.yappRectangle, obj.yappOffset, i(0.05), i(0.05), -25]
                 , [i(0.375+2*1.075), obj.pcbWidth-i(0.26+0.1), i(0.2), i(0.8), obj.yappRectangle, obj.yappOffset, i(0.05), i(0.05), -25]
                 , [i(0.375+3*1.075), obj.pcbWidth-i(0.26+0.1), i(0.2), i(0.8), obj.yappRectangle, obj.yappOffset, i(0.05), i(0.05), -25]
+                , [obj.pcbLength - i(2), obj.pcbWidth-i(1.175), i(0.1), i(0.2), obj.yappRectangle, obj.yappOffset, i(0.05), i(0.05), -0]
+                , [obj.pcbLength - i(2.54), obj.pcbWidth-i(1.63), i(0.1), i(0.4), obj.yappRectangle, obj.yappOffset, i(0.05), i(0.05), -90]
+                , [obj.pcbLength-i(0.6), obj.pcbWidth-i(1.1)-i(2.15), i(2.15), i(0.6), obj.yappRectangle]
                 //, [0, 31.5-1, 12.2+2, 11, yappRectangle]       // USB (right)
                 //, [0, 3.5-1, 12, 13.5, yappRectangle]          // Power Jack
                 //, [29-1, 12.5-1, 8.5+2, 35+2,  yappRectangle]  // ATmega328
@@ -257,6 +260,19 @@ const YAPP_colorlight_5A_75B = (obj) => {
                     , [55, obj.pcbWidth/2, 25, 2, obj.yappRectangle, obj.yappCenter]
                     ];
 
+    //-- front plane  -- origin is pcb[0,0,0]
+    // (0) = posy
+    // (1) = posz
+    // (2) = width
+    // (3) = height
+    // (4) = { yappRectangle | yappCircle }
+    // (5) = { yappCenter }
+    obj.cutoutsFront =  [
+        [obj.pcbWidth - i(1.1) - i(2.15), -5, i(2.15), 15+obj.lidWallHeight, obj.yappRectangle]
+      //    , [30, 7.5, 15, 9, yappRectangle, yappCenter]
+      //    , [0, 2, 10, 7, yappCircle]
+    ];
+
     //-- back plane  -- origin is pcb[0,0,0]
     // (0) = posy
     // (1) = posz
@@ -265,8 +281,8 @@ const YAPP_colorlight_5A_75B = (obj) => {
     // (4) = { yappRectangle | yappCircle }
     // (5) = { yappCenter }
     obj.cutoutsBack = [
-                  [31.5-1, -1, 12.2+2, 12, obj.yappRectangle]  // USB
-                , [3.5-1,  -1, 12,     11, obj.yappRectangle]  // Power Jack
+                //  [31.5-1, -1, 12.2+2, 12, obj.yappRectangle]  // USB
+                //, [3.5-1,  -1, 12,     11, obj.yappRectangle]  // Power Jack
                 ];
 
     //-- snap Joins -- origen = box[x0,y0]
@@ -287,16 +303,25 @@ const YAPP_colorlight_5A_75B = (obj) => {
     // (5) = size
     // (6) = "label text"
     obj.labelsPlane = [
-                  [5,  28,   0, "lid", "Arial:style=bold", 5, "Arduino UNO" ]
+                  [10,  65,  0, "lid", "Arial:style=bold", 7, "Colorlight 5A-75B" ]
                 , [57, 33,  90, "lid", "Liberation Mono:style=bold", 5, "YAPP" ]
-                , [35, 36,   0, "lid", "Liberation Mono:style=bold", 3, "RX" ]
-                , [35, 40.5, 0, "lid", "Liberation Mono:style=bold", 3, "TX" ]
-                , [35, 45.6, 0, "lid", "Liberation Mono:style=bold", 3, "13" ]
-                ];
+                , [80, 43,  90, "lid", "Liberation Mono:style=bold", 5, "JTAG" ]
+                , [90, 48 + i(0.3), 180, "lid", "Liberation Mono:style=bold", 2, "TCK" ]
+                , [90, 48 + i(0.2), 180, "lid", "Liberation Mono:style=bold", 2, "TMS" ]
+                , [90, 48 + i(0.1), 180, "lid", "Liberation Mono:style=bold", 2, "TDI" ]
+                , [90, 48 + i(0.0), 180, "lid", "Liberation Mono:style=bold", 2, "TDO" ]
+                , [98 + i(0.1), 68, 90, "lid", "Liberation Mono:style=bold", 2, "GND" ]
+                , [98 + i(0.0), 68, 90, "lid", "Liberation Mono:style=bold", 2, "3V3" ]
+];
 
 }
 
 module.exports = { main, getParameterDefinitions }
+
+// **************************************************************
+// For new boards, don't touch anything below!
+// All the code below is board independent
+// **************************************************************
 
 function i(m) {
     return m*25.4
@@ -978,7 +1003,7 @@ class Box {
         }
         function planeThickness(T) {
             return (T=="base") ? (self.basePlaneThickness + self.roundRadius + 2) :
-                                 (self.lidPlaneThickness + self.roundRadius + 2)
+                                 (self.lidPlaneThickness + self.lidWallHeight) //self.roundRadius + 2)
         }
         function setCutoutArray(T) {
             return (T=="base") ? self.cutoutsBase : self.cutoutsLid
@@ -997,8 +1022,9 @@ class Box {
             if (cutOut[4] == this.yappRectangle && cutOut[5] == this.yappOffset) { // org pcb_x/y
                 let posx = this.pcbX + cutOut[0]
                 let posy = this.pcbY + cutOut[1]
+                console.log(cutOut)
                 o = union(o,
-                        translate([this.posx + cutOut[6], this.posy + cutOut[7], this.zPos],
+                        translate([posx + cutOut[6], posy + cutOut[7], zPos],
                             rotateZ(degToRad(cutOut[8]),
                                 translate([-cutOut[6], -cutOut[7], 0],
                                     scadCube({size: [cutOut[3], cutOut[2], thickness]})))))
@@ -1170,6 +1196,7 @@ class Box {
                 let z = this.standoffHeight + this.pcbThickness + cutOut[1];
                 let t = this.baseWallHeight - this.ridgeHeight
                 let newH = this.newHeight(type, cutOut[3], z, t);
+                console.log(type, cutOut[3], z, t)
                 o = union(o,
                     translate([this.shellLength - this.wallThickness - this.roundRadius - 1, posy, posz],
                         colorize(colorNameToRgb('purple'),
@@ -1821,6 +1848,7 @@ const scadText = (message, height = 1, size = 1) => {
 }
 
 const scadCube = (p) => {
+    console.log(p)
     p.center = [p.size[0]/2, p.size[1]/2, p.size[2]/2]
     return cuboid(p)
 }
