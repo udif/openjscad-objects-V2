@@ -66,9 +66,9 @@ const {vectorText } = jscad.text
 
 var parameters = [
     { name: 'doHull', type: 'radio', caption: 'Show:',
-      values: ['base', 'lid', 'both'],
-      captions: ['Base', 'Lid', 'Both'], initial: 'both' }
-  ]
+    values: ['base', 'lid', 'both', 'side by side'],
+    captions: ['Base', 'Lid', 'Both', 'Side by Side'], initial: 'side by side' }
+]
   
 const getParameterDefinitions = () => parameters
 
@@ -81,15 +81,19 @@ const main = (params) => {
     if (params.doHull === 'base') {
         obj.printBaseShell = true;
         obj.printLidShell = false;
+        obj.showSideBySide = true;
     } else if (params.doHull === 'lid') {
         obj.printBaseShell = false;
         obj.printLidShell = true;
-        parameters.push({ name: 'doHull2', type: 'radio', caption: 'Show:',
-        values: ['base', 'lid', 'both'],
-        captions: ['Base', 'Lid', 'Both'], initial: 'both' })
+        obj.showSideBySide = true;
+    } else if (params.doHull === 'side by side') {
+        obj.printBaseShell = true;
+        obj.printLidShell = true;
+        obj.showSideBySide = true;
     } else if (params.doHull === 'both') {
         obj.printBaseShell = true;
         obj.printLidShell = true;
+        obj.showSideBySide = false;
     }
     obj.YAPPgenerate()
     return obj.color_Box()
@@ -1652,39 +1656,40 @@ class Box {
                                                 scadText("LEFT")))))))))
             } else { // lid on base
                 o = union(o,
-                    translate([0, 0, this.baseWallHeight + this.basePlaneThickness + this.lidWallHeight + this.lidPlaneThickness + this.onLidGap],
-                    //lidHookOutside(),
-                
-                    subtract(  // (t2)
-                        lidShell(),
+                        translate([0, 0, this.baseWallHeight + this.basePlaneThickness + this.lidWallHeight + this.lidPlaneThickness + this.onLidGap],
+                        //lidHookOutside(),
+                            subtract(  // (t2)
+                                this.lidShell(),
 
-                        this.cutoutsInXY("lid"),
-                        this.cutoutsInXZ("lid"),
-                        this.cutoutsInYZ("lid"),
-                        (ridgeHeight < 3) ? console.log("ridgeHeight < 3mm: no SnapJoins possible") : printLidSnapJoins(),
-                        //colorize(colorNameToRgb('red'), this.subtractLabels("lid", "lid")),
-                        //colorize(colorNameToRgb('red'), this.subtractLabels("lid", "front")),
-                        //colorize(colorNameToRgb('red'), this.subtractLabels("lid", "back")),
-                        //colorize(colorNameToRgb('red'), this.subtractLabels("lid", "left")),
-                        //colorize(colorNameToRgb('red'), this.subtractLabels("lid", "right")),
+                                this.cutoutsInXY("lid"),
+                                this.cutoutsInXZ("lid"),
+                                this.cutoutsInYZ("lid"),
+                                (this.ridgeHeight < 3) ? console.log("ridgeHeight < 3mm: no SnapJoins possible") : this.printLidSnapJoins(),
+                                //colorize(colorNameToRgb('red'), this.subtractLabels("lid", "lid")),
+                                //colorize(colorNameToRgb('red'), this.subtractLabels("lid", "front")),
+                                //colorize(colorNameToRgb('red'), this.subtractLabels("lid", "back")),
+                                //colorize(colorNameToRgb('red'), this.subtractLabels("lid", "left")),
+                                //colorize(colorNameToRgb('red'), this.subtractLabels("lid", "right")),
 
-                        //--- show inspection X-as
-                        (inspectX > 0) ?
-                            translate([shellLength-inspectX, -2, (shellHeight+lidPlaneThickness+ridgeHeight+4)*-1],
-                                scadCube({size:[this.shellLength, this.shellWidth + 3,  (this.ShellHeight + this.ridgeHeight + this.lidPlaneThickness) * 2 + this.onLidGap]})) :
-                        (inspectX < 0) ? 
-                            translate([-this.shellLength* + abs(this.inspectX), -2, -this.shellHeight],
-                                scadCube({size:[this.shellLength, this.shellWidth + 3,  this.ShellHeight + this.onLidGap]})) : emptyObject(),
+                                //--- show inspection X-as
+                                (this.inspectX > 0) ?
+                                    translate([shellLength-inspectX, -2, (shellHeight+lidPlaneThickness+ridgeHeight+4)*-1],
+                                        scadCube({size:[this.shellLength, this.shellWidth + 3,  (this.ShellHeight + this.ridgeHeight + this.lidPlaneThickness) * 2 + this.onLidGap]})) :
+                                (this.inspectX < 0) ? 
+                                    translate([-this.shellLength* + abs(this.inspectX), -2, -this.shellHeight],
+                                        scadCube({size:[this.shellLength, this.shellWidth + 3,  this.ShellHeight + this.onLidGap]})) : emptyObject(),
 
-                        //--- show inspection Y-as
-                        (inspectY > 0) ?
-                            translate([-1, this.inspectY - this.shellWidth, -(this.lidWallHeight + this.ridgeHeight + this.lidPlaneThickness + 2)],
-                                scadCube({size:[this.shellLength + 2, this.shellWidth, this.lidWallHeight + this.lidPlaneThickness + this.ridgeHeight + 4]})) :
-                        (inspectY < 0) ? 
-                            translate([-1, this.shellWidth - abs(this.inspectY), -2],
-                                scadCube({size:[this.shellLength + 2, this.shellWidth, this.baseWallHeight + this.basePlaneThicknesst + 4]})) : emptyObject())))
-                
-                    //lidHookInside();
+                                //--- show inspection Y-as
+                                (this.inspectY > 0) ?
+                                    translate([-1, this.inspectY - this.shellWidth, -(this.lidWallHeight + this.ridgeHeight + this.lidPlaneThickness + 2)],
+                                        scadCube({size:[this.shellLength + 2, this.shellWidth, this.lidWallHeight + this.lidPlaneThickness + this.ridgeHeight + 4]})) :
+                                (this.inspectY < 0) ? 
+                                    translate([-1, this.shellWidth - abs(this.inspectY), -2],
+                                        scadCube({size:[this.shellLength + 2, this.shellWidth, this.baseWallHeight + this.basePlaneThicknesst + 4]})) : emptyObject()
+                            )
+                        )
+                        //lidHookInside();
+                    )
             } // lid on top off Base
             this.blue = union(this.blue, o)
         } // printLidShell()
