@@ -1337,21 +1337,22 @@ class Box {
                 translate([this.shellLength / 2, this.shellWidth / 2, posZ00],
                     subtract(
                         this.minkowskiBox("base", this.shellInsideLength, this.shellInsideWidth, this.baseWallHeight, this.roundRadius, this.basePlaneThickness, this.wallThickness),
-                        translate([-1, -1, this.shellHeight/2],
-                            this.hideBaseWalls ? 
-                            cuboid({size: [this.shellLength + 3, this.shellWidth + 3, this.shellHeight + this.baseWallHeight * 2 - this.basePlaneThickness + this.roundRadius]}) :
+                        this.hideBaseWalls ? 
+                            translate([-1, -1, this.shellHeight/2],
+                                cuboid({size: [this.shellLength + 3, this.shellWidth + 3, this.shellHeight + this.baseWallHeight * 2 - this.basePlaneThickness + this.roundRadius]})) :
                             union(
-                                cuboid({size: [this.shellLength + 3, this.shellWidth + 3, this.shellHeight]}),
+                                translate([-1, -1, this.shellHeight/2],
+                                    cuboid({size: [this.shellLength + 3, this.shellWidth + 3, this.shellHeight]})),
                                 //-- build ridge
                                 subtrbaseRidge(this.shellInsideLength + this.wallThickness, this.shellInsideWidth + this.wallThickness, 
                                                this.ridgeHeight, -this.ridgeHeight, this.roundRadius)
-                                ))
-                        )
+                            )
                     ),
+                ),
                 this.pcbHolders(),
                 (this.ridgeHeight < 3) ? console.log("ridgeHeight < 3mm: no SnapJoins possible") : this.printBaseSnapJoins(),
                 this.shellConnectors("base")
-                )
+            )
         return o
     } //  baseShell()
 
@@ -1517,12 +1518,12 @@ class Box {
             union(this.blue, 
                 translate([-10, 10, 0],
                     rotateZ(Math.PI / 2,
-                        scadText("BACK"))),
+                        scadText("BACK", 1, 5))),
                 translate([this.shellLength + 15, 10, 0],
                     rotateZ(Math.PI / 2,
-                        scadText("FRONT"))),
+                        scadText("FRONT", 1, 5))),
                 translate([15, -(15 + this.shiftLid), 0],
-                    scadText("LEFT")))
+                    scadText("LEFT", 1, 5)))
     } // showOrientation()
 
     //===========================================================
@@ -1641,9 +1642,8 @@ class Box {
                                     //lidHookOutside(),
                         
                                     translate([this.shellLength - 15, -15, 0],
-                                        extrudeLinear({height: 1}, 
                                             mirrorX(
-                                                scadText("LEFT")))))))))
+                                                scadText("LEFT", 1, 5))))))))
             } else { // lid on base
                 o = union(o,
                         translate([0, 0, this.baseWallHeight + this.basePlaneThickness + this.lidWallHeight + this.lidPlaneThickness + this.onLidGap],
