@@ -3,6 +3,9 @@ OpenJSCADS Box generator
 This project is based on https://github.com/mrWheel/YAPP_Box , which was written in OpenSCAD.
 I have rewritten the code for OpenJSCAD, but this is still work in progress.
 
+Here is a link to the current snapshot:
+[ColorLight 5A-75B Box](https://openjscad.xyz/?uri=https://raw.githubusercontent.com/udif/openjscad-objects-V2/master/YAPP_jscad/colorlight_5a_75B.jscad)
+
 Issues
 ------
 1. OpenSCAD has different (undocumented) semantics for coloring the 3D mode. It is undocumented (on purpose) as it may change in the future.
