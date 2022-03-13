@@ -65,10 +65,11 @@ const {vectorText } = jscad.text
 //
 var parameters = [
     {
-        name: 'boxMode', type: 'radio', caption: 'Show:',
+        name: 'boxMode', type: 'radio', caption: 'View:',
         values: ['base', 'lid', 'lid on base', 'side by side'],
         captions: ['Base', 'Lid', 'Lid on Base', 'Side by Side'], initial: 'side by side'
-    }
+    },
+    { name: 'showPCB', type: 'checkbox', checked: false, initial: false, caption: 'Show PCB:' },
 ]
   
 const getParameterDefinitions = () => parameters
@@ -95,6 +96,7 @@ const main = (params) => {
         obj.printLidShell = true;
         obj.showSideBySide = false;
     }
+    obj.showPCB = params.showPCB
     //obj.baseShell()
     obj.YAPPgenerate()
     return obj.color_Box()
